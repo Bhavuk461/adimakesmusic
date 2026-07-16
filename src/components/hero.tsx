@@ -13,27 +13,6 @@ function NavEq() {
   );
 }
 
-/** 12-spoke asterisk, spun slowly as a corner ornament. */
-function Asterisk({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden>
-      {[0, 30, 60, 90, 120, 150].map((angle) => (
-        <line
-          key={angle}
-          x1="50"
-          y1="6"
-          x2="50"
-          y2="94"
-          stroke="currentColor"
-          strokeWidth="7"
-          strokeLinecap="round"
-          transform={`rotate(${angle} 50 50)`}
-        />
-      ))}
-    </svg>
-  );
-}
-
 /** Faint spinning vinyl in the lower-left corner. */
 function Vinyl() {
   return (
@@ -78,7 +57,6 @@ export default function Hero() {
       </nav>
 
       <Vinyl />
-      <Asterisk className="pointer-events-none absolute right-[6%] top-[15%] z-0 h-24 w-24 animate-spin-slow text-white/15 md:h-40 md:w-40" />
 
       {/* headline */}
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
