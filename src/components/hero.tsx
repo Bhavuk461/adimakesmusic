@@ -46,7 +46,7 @@ export default function Hero() {
           <NavEq />
           adimakesmusic
         </a>
-        <div className="flex items-center gap-5 text-[10px] uppercase tracking-[0.3em] text-neutral-400 md:gap-8 md:text-xs">
+        <div className="flex items-center gap-5 text-[0.625rem] uppercase tracking-[0.3em] text-neutral-400 md:gap-8 md:text-xs">
           <a className="transition-colors hover:text-white" href="#sound">
             the sound
           </a>
@@ -60,7 +60,7 @@ export default function Hero() {
 
       {/* headline */}
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-        <p className="mb-6 text-[10px] uppercase tracking-[0.55em] text-neutral-500 md:mb-8 md:text-xs">
+        <p className="mb-6 text-[0.625rem] uppercase tracking-[0.55em] text-neutral-500 md:mb-8 md:text-xs">
           ( sound on ) — vol. 01
         </p>
 
@@ -76,7 +76,7 @@ export default function Hero() {
           </span>
         </h1>
 
-        <p className="mt-9 max-w-md text-[10px] font-medium uppercase leading-loose tracking-[0.28em] text-neutral-400 md:mt-11 md:text-xs">
+        <p className="mt-9 max-w-md text-[0.625rem] font-medium uppercase leading-loose tracking-[0.28em] text-neutral-400 md:mt-11 md:text-xs">
           everything here is black &amp; white —
           <br />
           until you press play.
@@ -84,7 +84,7 @@ export default function Hero() {
       </div>
 
       {/* bottom strip of the hero */}
-      <div className="z-10 flex items-end justify-between px-5 pb-6 text-[9px] uppercase tracking-[0.35em] text-neutral-500 md:px-10 md:pb-8 md:text-[11px]">
+      <div className="z-10 flex items-end justify-between px-5 pb-6 text-[0.5625rem] uppercase tracking-[0.35em] text-neutral-500 md:px-10 md:pb-8 md:text-[0.6875rem]">
         <span className="hidden sm:block">est. mmxxvi</span>
         <a
           href="#sound"

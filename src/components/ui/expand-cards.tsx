@@ -281,7 +281,7 @@ export default function ExpandCards() {
                   )}
                 >
                   <SoundBars analyser={analyserRef} live={playing} />
-                  <p className="px-4 text-center text-[9px] uppercase tracking-[0.45em] text-white/90 md:text-[11px]">
+                  <p className="px-4 text-center text-[0.5625rem] uppercase tracking-[0.45em] text-white/90 md:text-[0.6875rem]">
                     {playing
                       ? "now playing — track 01"
                       : blocked
@@ -301,7 +301,7 @@ export default function ExpandCards() {
                     <p className="font-display text-2xl uppercase leading-none text-white md:text-3xl">
                       {card.title}
                     </p>
-                    <p className="mt-2 text-[9px] uppercase tracking-[0.4em] text-white/70 md:text-[10px]">
+                    <p className="mt-2 text-[0.5625rem] uppercase tracking-[0.4em] text-white/70 md:text-[0.625rem]">
                       aditya chauhan — demo
                     </p>
                   </div>
@@ -327,14 +327,14 @@ export default function ExpandCards() {
                     isOpen ? "opacity-100" : "opacity-0",
                   )}
                 >
-                  <span className="rounded-full border border-white/70 px-3 py-1 text-[8px] font-semibold uppercase tracking-[0.3em] text-white md:text-[10px]">
+                  <span className="rounded-full border border-white/70 px-3 py-1 text-[0.5rem] font-semibold uppercase tracking-[0.3em] text-white md:text-[0.625rem]">
                     coming soon
                   </span>
                   <div>
                     <p className="font-display text-6xl uppercase leading-none text-white/95 md:text-8xl">
                       {card.number}
                     </p>
-                    <p className="mt-2 text-[9px] uppercase tracking-[0.4em] text-white/80 md:text-[10px]">
+                    <p className="mt-2 text-[0.5625rem] uppercase tracking-[0.4em] text-white/80 md:text-[0.625rem]">
                       still in the studio
                     </p>
                   </div>
@@ -349,7 +349,7 @@ export default function ExpandCards() {
                 isOpen ? "pointer-events-none opacity-0" : "opacity-100",
               )}
             >
-              <span className="rotate-180 text-[9px] font-semibold uppercase tracking-[0.4em] text-white/90 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)] [writing-mode:vertical-rl] md:text-[10px]">
+              <span className="rotate-180 text-[0.5625rem] font-semibold uppercase tracking-[0.4em] text-white/90 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)] [writing-mode:vertical-rl] md:text-[0.625rem]">
                 {i === 0 ? `${card.number} — track 01 ♪` : `${card.number} — soon`}
               </span>
             </div>

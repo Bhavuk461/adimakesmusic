@@ -41,6 +41,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* The site is designed to read like a browser at 125% zoom — scale the rem
+   root on tablet/desktop. Media queries still resolve against 16px, so
+   Tailwind breakpoints are unaffected; phones keep their denser 100%. */
+@media (min-width: 768px) {
+  html {
+    font-size: 125%;
+  }
+}
+
 body {
   @apply bg-black text-white antialiased;
 }
@@ -58,6 +67,14 @@ body {
 .text-outline-black {
   color: transparent;
   -webkit-text-stroke: 2px #000;
+}
+
+/* stroke keeps pace with the 125% type scale */
+@media (min-width: 768px) {
+  .text-outline,
+  .text-outline-black {
+    -webkit-text-stroke-width: 2.5px;
+  }
 }
 
 /* Film grain, tiled from an inline SVG turbulence texture */
