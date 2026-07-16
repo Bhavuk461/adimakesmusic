@@ -20,15 +20,15 @@ function Vinyl() {
       aria-hidden
       className="pointer-events-none absolute -bottom-48 -left-48 z-0 hidden md:block"
     >
-      <div className="relative h-[38rem] w-[38rem] animate-spin-slower rounded-full border border-white/15">
-        <div className="absolute inset-10 rounded-full border border-white/10" />
-        <div className="absolute inset-20 rounded-full border border-white/10" />
-        <div className="absolute inset-32 rounded-full border border-dashed border-white/15" />
-        <div className="absolute inset-44 rounded-full border border-white/10" />
-        <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/25" />
-        <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/40" />
+      <div className="relative h-[38rem] w-[38rem] animate-spin-slower rounded-full border border-white/30 bg-[radial-gradient(circle,transparent_58%,rgba(255,255,255,0.04)_100%)]">
+        <div className="absolute inset-10 rounded-full border border-white/20" />
+        <div className="absolute inset-20 rounded-full border border-white/20" />
+        <div className="absolute inset-32 rounded-full border border-dashed border-white/30" />
+        <div className="absolute inset-44 rounded-full border border-white/20" />
+        <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/45" />
+        <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70" />
         {/* notch so the spin reads */}
-        <div className="absolute left-1/2 top-0 h-8 w-px -translate-x-1/2 bg-white/30" />
+        <div className="absolute left-1/2 top-0 h-8 w-px -translate-x-1/2 bg-white/50" />
       </div>
     </div>
   );
