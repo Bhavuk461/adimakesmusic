@@ -8,6 +8,7 @@ Thumbs.db
 .claude/
 
 # raw source assets — the site serves the copies in /public
-/audio/
-/pics/
+# (scoped to the raw files so /audio and /pics inside a deploy tree stay publishable)
+/audio/WhatsApp*
+/pics/WhatsApp*
 /nul
