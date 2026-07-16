@@ -1,0 +1,13 @@
+node_modules
+dist
+*.local
+.DS_Store
+Thumbs.db
+
+# local tooling
+.claude/
+
+# raw source assets — the site serves the copies in /public
+/audio/
+/pics/
+/nul
