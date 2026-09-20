@@ -1,3 +1,5 @@
+import PixelField from "@/components/ui/pixel-field";
+
 /** Tiny always-on equalizer next to the wordmark. */
 function NavEq() {
   return (
@@ -37,6 +39,8 @@ function Vinyl() {
 export default function Hero() {
   return (
     <header className="relative flex min-h-svh flex-col overflow-hidden bg-black text-white">
+      <PixelField />
+
       {/* nav */}
       <nav className="z-20 flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
         <a
