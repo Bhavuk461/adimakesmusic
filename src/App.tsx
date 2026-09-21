@@ -1,6 +1,7 @@
 import Divider from "@/components/divider";
 import Footer from "@/components/footer";
 import Hero from "@/components/hero";
+import Loader from "@/components/loader";
 import SoundSection from "@/components/sound-section";
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
       <Divider />
       <SoundSection />
       <Footer />
+      <Loader />
       {/* film grain over everything, both halves */}
       <div aria-hidden className="grain pointer-events-none fixed inset-0 z-50 opacity-[0.06]" />
     </main>
