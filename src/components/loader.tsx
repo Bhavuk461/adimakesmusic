@@ -101,6 +101,8 @@ export default function Loader() {
           variant="wave"
           size={size}
           renderScale={scale}
+          // black & white like the rest of the site — colour is saved for the cards
+          saturation={0}
           // the shader's side falloff never quite reaches black, so feather
           // the canvas edges rather than letting the box show
           style={{

@@ -20,7 +20,7 @@ export type SiriWaveVariant = "wave" | "fluid-dots"
 const VERTEX_SHADER = `attribute vec2 aPos; void main(){ gl_Position=vec4(aPos,0.0,1.0); }`
 
 const WAVE_SHADER = `precision highp float;
-uniform vec2 iResolution; uniform float iTime;
+uniform vec2 iResolution; uniform float iTime; uniform float uSaturation;
 const float PI = 3.14159265359;
 const float AMPLITUDE   = 0.32;
 const float FREQ        = 1.1;
@@ -86,7 +86,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord){
     float bandAmt    = 1e-4 * BAND_FILL * inten;
     vec3 num = vec3(0.0), den = vec3(0.0);
     for(int s = 0; s < 4; s++){
-        vec3 hue = mix(vec3(1.0), spectral4(s), res);
+        vec3 hue = mix(vec3(1.0), spectral4(s), res * uSaturation);
         den += hue;
         float ab = mix(-AB, AB, float(s)/3.0);
         float yL = A2 * env * res * sin(p.x*ABER_FREQ + drift + ab);
@@ -269,12 +269,15 @@ export interface SiriWaveProps
   size?: number
   /** Internal render resolution multiplier (lower = cheaper/blurrier). */
   renderScale?: number
+  /** `"wave"` only: 1 = full spectrum strands, 0 = pure white strands. */
+  saturation?: number
 }
 
 export function SiriWave({
   variant = "wave",
   size = 420,
   renderScale = 0.75,
+  saturation = 1,
   className,
   style,
   ...props
@@ -335,6 +338,8 @@ export function SiriWave({
 
     const uResolution = gl.getUniformLocation(program, "iResolution")
     const uTime = gl.getUniformLocation(program, "iTime")
+    // absent from the fluid-dots shader, where the location is null and this is a no-op
+    gl.uniform1f(gl.getUniformLocation(program, "uSaturation"), saturation)
 
     const dim = Math.round(size * renderScale)
     canvas.width = dim
@@ -362,7 +367,7 @@ export function SiriWave({
       gl.deleteShader(fs)
       gl.deleteBuffer(buffer)
     }
-  }, [variant, size, renderScale])
+  }, [variant, size, renderScale, saturation])
 
   return (
     <canvas
