@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motionPaused } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type PixelFieldProps = {
@@ -260,6 +261,15 @@ export default function PixelField({ className, cell = 36, radius = 200 }: Pixel
     };
 
     const onMove = (e: MouseEvent) => {
+      // the site's "pause motion" switch quiets this too: let anything that is
+      // up sink back, and raise nothing new
+      if (motionPaused()) {
+        if (pointer.on) {
+          pointer.on = false;
+          wake();
+        }
+        return;
+      }
       pointer.x = e.clientX;
       pointer.y = e.clientY;
       pointer.on = true;

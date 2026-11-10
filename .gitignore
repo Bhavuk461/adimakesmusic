@@ -12,3 +12,6 @@ Thumbs.db
 /audio/WhatsApp*
 /pics/WhatsApp*
 /nul
+
+# server bundle used only while prerendering (scripts/prerender.mjs)
+.ssr

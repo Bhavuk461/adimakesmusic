@@ -5,6 +5,11 @@
   --font-accent: "Instrument Serif", Georgia, serif;
   --font-grotesk: "Space Grotesk", "Segoe UI", sans-serif;
 
+  /* The quietest text the site allows itself. Each is the dimmest grey that
+     still clears WCAG AA (4.5:1) against its own half of the page. */
+  --color-quiet: #808080; /* on black — 5.3:1 */
+  --color-quiet-ink: #6b6b6b; /* on the off-white half (#f5f4f3) — 4.9:1 */
+
   --animate-marquee: marquee 26s linear infinite;
   --animate-marquee-slow: marquee 38s linear infinite;
   --animate-spin-slow: spin 18s linear infinite;
@@ -65,6 +70,13 @@ body {
   color: #000;
 }
 
+/* Keyboard focus is always visible, drawn in the ink of whichever half of the
+   page the element sits on. Mouse and touch never see it. */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
 /* Hollow display type — the outline half of the black & white duo */
 .text-outline {
   color: transparent;
@@ -87,6 +99,35 @@ body {
 .grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 240px 240px;
+}
+
+/* The intro curtain ships in the prerendered HTML. If the script never
+   arrives it must not trap the page behind it, so it lifts on its own after
+   12s — the script normally removes it well before that. */
+[data-loader] {
+  animation: loader-failsafe 0.5s ease-out 12s forwards;
+}
+@keyframes loader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* The visitor's own off-switch (footer → "pause motion"). It freezes the
+   looping animations that start by themselves, in place; one-shot fades and
+   hover transitions are left alone. Add any new infinite animation here. */
+:root[data-motion="off"]
+  :is(
+    .animate-marquee,
+    .animate-marquee-slow,
+    .animate-spin-slow,
+    .animate-spin-slower,
+    .animate-eq,
+    .animate-eq-bar,
+    .animate-bounce
+  ) {
+  animation-play-state: paused !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

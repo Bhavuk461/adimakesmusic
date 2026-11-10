@@ -12,6 +12,12 @@ type CardDef = {
   title: string;
   image?: string;
   gradient?: string;
+  /**
+   * Which of the two inks the type is set in. White cannot be read on the
+   * orange or the green (it fails WCAG AA there), so those two cards are inked
+   * in black; the gradients themselves are never dimmed to make room for text.
+   */
+  ink?: "light" | "dark";
 };
 
 const cards: CardDef[] = [
@@ -19,25 +25,28 @@ const cards: CardDef[] = [
     id: "track-01",
     number: "01",
     title: "Track 01",
-    image: `${BASE}pics/aditya.jpg`,
+    image: `${BASE}pics/aditya-chowhan.jpg`,
   },
   {
     id: "track-02",
     number: "02",
     title: "Track 02",
     gradient: "bg-gradient-to-br from-amber-300 via-orange-500 to-rose-600",
+    ink: "dark",
   },
   {
     id: "track-03",
     number: "03",
     title: "Track 03",
     gradient: "bg-gradient-to-br from-sky-300 via-blue-600 to-indigo-800",
+    ink: "light",
   },
   {
     id: "track-04",
     number: "04",
     title: "Track 04",
     gradient: "bg-gradient-to-br from-lime-300 via-emerald-500 to-teal-800",
+    ink: "dark",
   },
 ];
 
@@ -197,7 +206,7 @@ function SoundBars({
   }, [analyser, live]);
 
   return (
-    <div className="flex h-24 items-center justify-center gap-[3px] md:h-36 md:gap-1">
+    <div aria-hidden className="flex h-24 items-center justify-center gap-[3px] md:h-36 md:gap-1">
       {Array.from({ length: BAR_COUNT }).map((_, i) => (
         <span
           key={i}
@@ -221,34 +230,89 @@ function SoundBars({
 
 export default function ExpandCards() {
   const [open, setOpen] = useState(0);
-  const [hoverHero, setHoverHero] = useState(false);
+  // Card 1 shows its "audio view" (blurred photo, live bars) while a mouse
+  // rests on it, or while the track has been asked for by tap, click or key.
+  const [hovering, setHovering] = useState(false);
+  const [want, setWant] = useState(false);
   const { play, pause, playing, blocked, analyserRef } = useHoverAudio(
     `${BASE}audio/track-01.mp3`,
   );
 
-  const enter = (i: number) => {
-    setOpen(i);
-    if (i === 0) {
-      setHoverHero(true);
-      void play();
-    }
+  const audioView = hovering || want;
+
+  const start = () => {
+    setWant(true);
+    void play();
+  };
+  const stop = () => {
+    setWant(false);
+    pause();
   };
 
-  const leaveHero = () => {
-    setHoverHero(false);
-    pause();
+  // A click, a tap, Enter or Space. On the first card that is the play/pause
+  // switch — hovering starts the track as a shortcut, but nobody has to hover,
+  // and anyone can stop it again.
+  const activate = (i: number) => {
+    setOpen(i);
+    if (i !== 0) {
+      if (want) stop();
+      return;
+    }
+    if (playing) stop();
+    else start();
   };
 
   return (
     <div className="flex h-[24rem] w-full items-stretch gap-2 md:h-[30rem] md:gap-3">
       {cards.map((card, i) => {
         const isOpen = open === i;
+        const isTrack = i === 0;
+        const darkInk = card.ink === "dark";
         return (
           <div
             key={card.id}
-            onMouseEnter={() => enter(i)}
-            onMouseLeave={i === 0 ? leaveHero : undefined}
-            onClick={() => enter(i)}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isTrack ? playing : undefined}
+            aria-expanded={isTrack ? undefined : isOpen}
+            // hover is a mouse-only shortcut; a touch "enters" too, but there
+            // the tap itself (onClick) is the switch
+            onPointerEnter={(e) => {
+              if (e.pointerType === "touch") return;
+              setOpen(i);
+              if (isTrack) {
+                setHovering(true);
+                start();
+              }
+            }}
+            onPointerLeave={
+              isTrack
+                ? (e) => {
+                    if (e.pointerType === "touch") return;
+                    setHovering(false);
+                    stop();
+                  }
+                : undefined
+            }
+            onClick={() => activate(i)}
+            onKeyDown={(e) => {
+              if (e.repeat) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                activate(i);
+              } else if (e.key === "Escape" && isTrack) {
+                stop();
+              }
+            }}
+            onFocus={() => setOpen(i)}
+            // the track never plays on behind a card nobody is on any more
+            onBlur={
+              isTrack
+                ? () => {
+                    if (!hovering) stop();
+                  }
+                : undefined
+            }
             style={{ flexGrow: isOpen ? 7 : 1, flexBasis: 0 }}
             className={cn(
               "group relative min-w-0 cursor-pointer overflow-hidden rounded-2xl transition-[flex-grow,box-shadow] duration-500 ease-in-out md:rounded-3xl",
@@ -258,35 +322,56 @@ export default function ExpandCards() {
               card.gradient,
             )}
           >
-            {/* card 1 — the photo + audio */}
+            {/* card 1 — the photo + audio. As a button its name is read from
+                the caption ("Play Track 01, aditya chowhan — demo"); everything
+                that would only repeat or clutter that is hidden from it. */}
             {card.image && (
               <>
+                <span className="sr-only">Play </span>
                 <img
+                  aria-hidden
                   src={card.image}
                   alt="Aditya Chowhan with his guitar"
+                  width={960}
+                  height={1280}
                   draggable={false}
                   className={cn(
                     "absolute inset-0 h-full w-full object-cover object-[50%_30%] transition-all duration-700",
-                    hoverHero ? "scale-110 blur-[6px] brightness-[0.45]" : "scale-100",
+                    audioView ? "scale-110 blur-[6px] brightness-[0.45]" : "scale-100",
                   )}
                 />
                 {/* legibility gradient */}
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                {/* Closed, the card is a thin slice of the photo with its label
+                    running up the bright stonework — so the fade deepens while
+                    it is shut, and lifts again as it opens. */}
+                <div
+                  className={cn(
+                    "absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/45 to-transparent transition-opacity duration-500",
+                    isOpen ? "opacity-0" : "opacity-100",
+                  )}
+                />
 
-                {/* the live bars, front and center on hover */}
+                {/* the live bars, front and center while the track is up */}
                 <div
                   className={cn(
                     "absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 transition-opacity duration-500",
-                    hoverHero && isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+                    audioView && isOpen ? "opacity-100" : "pointer-events-none opacity-0",
                   )}
                 >
                   <SoundBars analyser={analyserRef} live={playing} />
-                  <p className="px-4 text-center text-[0.5625rem] uppercase tracking-[0.45em] text-white/90 md:text-[0.6875rem]">
+                  {/* the playing state itself reaches assistive tech as aria-pressed */}
+                  <p
+                    aria-hidden
+                    className="px-4 text-center text-[0.5625rem] uppercase tracking-[0.45em] text-white/90 md:text-[0.6875rem]"
+                  >
                     {playing
                       ? "now playing — track 01"
                       : blocked
                         ? "♪ click once for sound"
-                        : "tuning…"}
+                        : want
+                          ? "tuning…"
+                          : "paused — click to play"}
                   </p>
                 </div>
 
@@ -301,11 +386,12 @@ export default function ExpandCards() {
                     <p className="font-display text-2xl uppercase leading-none text-white md:text-3xl">
                       {card.title}
                     </p>
-                    <p className="mt-2 text-[0.5625rem] uppercase tracking-[0.4em] text-white/70 md:text-[0.625rem]">
+                    <p className="mt-2 text-[0.5625rem] uppercase tracking-[0.4em] text-white/85 md:text-[0.625rem]">
                       aditya chowhan — demo
                     </p>
                   </div>
                   <span
+                    aria-hidden
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-full border border-white/60 text-sm text-white transition-colors md:h-10 md:w-10",
                       playing && "border-white bg-white text-black",
@@ -327,14 +413,27 @@ export default function ExpandCards() {
                     isOpen ? "opacity-100" : "opacity-0",
                   )}
                 >
-                  <span className="rounded-full border border-white/70 px-3 py-1 text-[0.5rem] font-semibold uppercase tracking-[0.3em] text-white md:text-[0.625rem]">
+                  {/* sits on the palest corner of each gradient, so it is inked
+                      in black — white would vanish there */}
+                  <span className="rounded-full border border-black/70 px-3 py-1 text-[0.5rem] font-semibold uppercase tracking-[0.3em] text-black md:text-[0.625rem]">
                     coming soon
                   </span>
                   <div>
-                    <p className="font-display text-6xl uppercase leading-none text-white/95 md:text-8xl">
+                    <p
+                      className={cn(
+                        "font-display text-6xl uppercase leading-none md:text-8xl",
+                        darkInk ? "text-black" : "text-white/95",
+                      )}
+                    >
+                      <span className="sr-only">Track </span>
                       {card.number}
                     </p>
-                    <p className="mt-2 text-[0.5625rem] uppercase tracking-[0.4em] text-white/80 md:text-[0.625rem]">
+                    <p
+                      className={cn(
+                        "mt-2 text-[0.5625rem] uppercase tracking-[0.4em] md:text-[0.625rem]",
+                        darkInk ? "text-black/80" : "text-white",
+                      )}
+                    >
                       still in the studio
                     </p>
                   </div>
@@ -342,15 +441,23 @@ export default function ExpandCards() {
               </>
             )}
 
-            {/* collapsed vertical label */}
+            {/* collapsed vertical label — a second copy of what the card already says */}
             <div
+              aria-hidden
               className={cn(
                 "absolute inset-0 flex items-end justify-center pb-5 transition-opacity duration-300",
                 isOpen ? "pointer-events-none opacity-0" : "opacity-100",
               )}
             >
-              <span className="rotate-180 text-[0.5625rem] font-semibold uppercase tracking-[0.4em] text-white/90 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)] [writing-mode:vertical-rl] md:text-[0.625rem]">
-                {i === 0 ? `${card.number} — track 01 ♪` : `${card.number} — soon`}
+              <span
+                className={cn(
+                  "rotate-180 text-[0.5625rem] font-semibold uppercase tracking-[0.4em] [writing-mode:vertical-rl] md:text-[0.625rem]",
+                  darkInk
+                    ? "text-black"
+                    : "text-white/90 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]",
+                )}
+              >
+                {isTrack ? `${card.number} — track 01 ♪` : `${card.number} — soon`}
               </span>
             </div>
           </div>
