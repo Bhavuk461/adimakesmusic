@@ -18,7 +18,7 @@ Built with Vite + React + TypeScript + Tailwind CSS v4, shadcn-style project str
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173/adimakesmusic/
+npm run dev      # http://localhost:5173/
 npm run build    # typecheck + production build to dist/
 ```
 
@@ -37,5 +37,8 @@ unlocks it. That's a browser policy, not a bug.
 npm run deploy   # builds and publishes dist/ to the gh-pages branch
 ```
 
-GitHub Pages serves the `gh-pages` branch (Vite `base` is set to
-`/adimakesmusic/`). Live at https://bhavuk461.github.io/adimakesmusic/
+GitHub Pages serves the `gh-pages` branch. Live at https://adimakesmusic.in
+
+The custom domain comes from `public/CNAME`, which ships in every build — if
+that file ever goes missing, Pages drops back to the `github.io` URL and the
+domain stops resolving. Vite `base` is `/` to match the domain root.
