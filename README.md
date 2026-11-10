@@ -1,6 +1,6 @@
 # adimakesmusic
 
-Site for **Aditya Chauhan** — musician. Everything is black &amp; white, until you press play.
+Site for **Aditya Chowhan** — musician. Everything is black &amp; white, until you press play.
 
 Built with Vite + React + TypeScript + Tailwind CSS v4, shadcn-style project structure
 (components live in `src/components/ui`, `@/` maps to `src/`).

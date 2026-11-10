@@ -21,7 +21,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-white/15 pt-6 text-[0.5625rem] uppercase tracking-[0.3em] text-neutral-600 md:text-[0.625rem]">
-          <span>© mmxxvi aditya chauhan</span>
+          <span>© mmxxvi aditya chowhan</span>
           <span>black &amp; white by design — colour by the music</span>
         </div>
       </div>

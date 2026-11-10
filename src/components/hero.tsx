@@ -73,7 +73,7 @@ export default function Hero() {
             Aditya
           </span>
           <span className="text-outline block text-[clamp(4.4rem,17vw,15rem)] tracking-[0.01em]">
-            Chauhan
+            Chowhan
           </span>
           <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[5deg] whitespace-nowrap font-accent text-[clamp(2.2rem,7.5vw,5.5rem)] lowercase italic tracking-normal drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
             makes&nbsp;music

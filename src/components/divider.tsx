@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const WORDS = [
   "the sound",
-  "aditya chauhan",
+  "aditya chowhan",
   "play it loud",
   "adimakesmusic",
   "vol. 01",

@@ -263,7 +263,7 @@ export default function ExpandCards() {
               <>
                 <img
                   src={card.image}
-                  alt="Aditya Chauhan with his guitar"
+                  alt="Aditya Chowhan with his guitar"
                   draggable={false}
                   className={cn(
                     "absolute inset-0 h-full w-full object-cover object-[50%_30%] transition-all duration-700",
@@ -302,7 +302,7 @@ export default function ExpandCards() {
                       {card.title}
                     </p>
                     <p className="mt-2 text-[0.5625rem] uppercase tracking-[0.4em] text-white/70 md:text-[0.625rem]">
-                      aditya chauhan — demo
+                      aditya chowhan — demo
                     </p>
                   </div>
                   <span
