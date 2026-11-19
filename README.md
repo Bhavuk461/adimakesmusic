@@ -31,7 +31,14 @@ canonical URL, share-card tags and structured data live there, in plain HTML.
 | File | Entry | Rendered by |
 | --- | --- | --- |
 | `index.html` | `src/main.tsx` | `src/App.tsx` |
+| `book/index.html` | `src/book.tsx` | `src/pages/book.tsx` |
+| `terms/`, `privacy/`, `refunds/`, `shipping/` | `src/policy.tsx` | `src/pages/policy.tsx` |
 | `404.html` | `src/not-found.tsx` | `src/pages/not-found.tsx` |
+
+Tags every page shares (icons, font preloads, the motion preference) are
+injected at `<!-- shared-head -->` by a small plugin in `vite.config.ts`.
+The booking page's description and price structured data are generated from
+`src/lib/packages.ts` during prerendering, so they always match the prices.
 
 `npm run build` runs three steps: the client build, a second build of
 `src/entry-server.tsx` for Node, and `scripts/prerender.mjs`, which renders each
@@ -45,7 +52,9 @@ should be indexed — to `SITEMAP` in `scripts/prerender.mjs`.
 
 Things that live outside the components:
 
-- `src/lib/site.ts` — name, links, booking switch. Empty values aren't rendered.
+- `src/lib/site.ts` — name, contact, socials, booking switch, payment endpoint.
+  Empty values aren't rendered.
+- `src/lib/packages.ts` — the sets and their prices (see *Bookings* below).
 - `public/robots.txt`, `public/site.webmanifest`, icons, `public/og.png`
   (the share card; its source is `scripts/og.html`).
 
@@ -62,6 +71,39 @@ The site is built to WCAG 2.2 AA. The parts that are easy to break:
 - **Motion.** "pause motion" (footer, and the second Tab stop) freezes the
   looping animations; `prefers-reduced-motion` is honoured too. New infinite
   animations must be added to the `[data-motion="off"]` rule in `index.css`.
+
+## Bookings and payments
+
+`/book/` sells two sets — **Solo** and **The Band** — in the lengths and prices
+listed in `src/lib/packages.ts`. That file is the only place prices live.
+
+The two square cover photos go in `public/pics/` and are switched on in
+`COVERS` at the top of `src/pages/book.tsx`; until then each set shows a
+designed record sleeve.
+
+**Without online payment** (`VITE_PAYMENTS_ENDPOINT` unset), "book" sends the
+filled-in booking as a WhatsApp message (or email) to the contact in `site.ts`.
+
+**With online payment**, a small Cloudflare Worker in `worker/` holds the
+Razorpay secret. It creates each order — pricing it itself from
+`packages.ts`, so the amount can't be edited in the browser — and checks
+Razorpay's signature afterwards. The booking details travel with the order as
+Razorpay *notes*, so each payment in the Razorpay dashboard shows who booked,
+for when and where.
+
+```bash
+npm run pay:test     # worker tests — no keys, no network
+npm run pay:login    # once: log the Cloudflare CLI in (opens the browser)
+npm run pay:deploy   # deploy the worker; prints its URL
+npm run pay:secret   # once: paste the Razorpay key secret (stored encrypted on Cloudflare)
+npm run pay:logs     # watch the worker live
+```
+
+Then put the worker's URL in `.env.production` as
+`VITE_PAYMENTS_ENDPOINT=https://…workers.dev` and redeploy the site. The secret
+never goes in this repository — it's public. Razorpay also has to approve
+`adimakesmusic.in` (Account & Settings → Business website details) before
+live payments are accepted, and capture should be set to automatic.
 
 ## Swap in new music
 

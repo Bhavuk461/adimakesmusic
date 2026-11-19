@@ -9,12 +9,41 @@ export const SITE = {
   url: "https://adimakesmusic.in",
   artist: "Aditya Chowhan",
   brand: "adimakesmusic",
+  city: "Delhi NCR",
+
+  contact: {
+    /** Digits only, country code first — the form wa.me links expect. */
+    whatsapp: "919958177449",
+    /** With non-breaking spaces, so the number never splits across two lines. */
+    whatsappDisplay: "+91 99581 77449",
+    email: "adityachowhanmusic@gmail.com",
+  },
 
   /** Public profiles: footer links here, `sameAs` in the structured data. */
-  socials: [] as { label: string; href: string }[],
+  socials: [
+    { label: "instagram", href: "https://www.instagram.com/adimakesmusic/" },
+    { label: "youtube", href: "https://www.youtube.com/@adityachowhan" },
+  ],
 
   booking: {
-    /** The Book button and the /book/ page appear once this is true. */
-    enabled: false,
+    /** Shows the Book button in the nav and footer, linking to /book/. */
+    enabled: true,
+  },
+
+  payments: {
+    /**
+     * Where the payment worker (worker/) is deployed. While this is empty the
+     * booking page sends requests over WhatsApp and email instead of taking
+     * payment. Set at build time with VITE_PAYMENTS_ENDPOINT (see .env.production).
+     */
+    endpoint: (import.meta.env.VITE_PAYMENTS_ENDPOINT ?? "").replace(/\/+$/, ""),
   },
 };
+
+/** wa.me link that opens a chat with `text` already typed out. */
+export const whatsappUrl = (text: string) =>
+  `https://wa.me/${SITE.contact.whatsapp}?text=${encodeURIComponent(text)}`;
+
+/** mailto: link with the subject and body filled in. */
+export const mailtoUrl = (subject: string, body: string) =>
+  `mailto:${SITE.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

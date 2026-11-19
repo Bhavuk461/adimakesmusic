@@ -1,0 +1,12 @@
+# The payment worker — see worker/src/index.ts and the "pay:*" scripts in package.json.
+name = "adimakesmusic-pay"
+main = "src/index.ts"
+compatibility_date = "2025-10-01"
+
+[vars]
+# The public half of the Razorpay key pair (it appears in every checkout anyway).
+RAZORPAY_KEY_ID = "rzp_live_Snb4RTDdgHiGsI"
+ALLOWED_ORIGINS = "https://adimakesmusic.in,https://www.adimakesmusic.in"
+
+# RAZORPAY_KEY_SECRET is NOT here, and must never be: this repository is public.
+# It is stored encrypted on Cloudflare with:  npm run pay:secret

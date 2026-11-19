@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-const WORDS = [
+const HOME_WORDS = [
   "the sound",
   "aditya chowhan",
   "play it loud",
@@ -30,10 +30,12 @@ function Spark() {
 }
 
 function Strip({
+  words,
   className,
   reverse = false,
   slow = false,
 }: {
+  words: string[];
   className?: string;
   reverse?: boolean;
   slow?: boolean;
@@ -41,7 +43,7 @@ function Strip({
   const half = (
     <div className="flex shrink-0 items-center font-display text-xl uppercase leading-none tracking-wide md:text-3xl">
       {Array.from({ length: 3 }).flatMap((_, repeat) =>
-        WORDS.map((word, i) => (
+        words.map((word, i) => (
           <span key={`${repeat}-${i}`} className="flex items-center gap-5 pr-5 md:gap-9 md:pr-9">
             <span className="whitespace-nowrap">{word}</span>
             <Spark />
@@ -73,14 +75,15 @@ function Strip({
  * The seam between the black half and the white half:
  * two marquee tapes crossing at opposing angles.
  */
-export default function Divider() {
+export default function Divider({ words = HOME_WORDS }: { words?: string[] }) {
   return (
     <div aria-hidden className="relative z-20 -my-8 select-none md:-my-10">
       <div className="-rotate-[2.2deg]">
-        <Strip className="border-y-[3px] border-black bg-white text-black" />
+        <Strip words={words} className="border-y-[3px] border-black bg-white text-black" />
       </div>
       <div className="-mt-4 rotate-[1.6deg] md:-mt-6">
         <Strip
+          words={words}
           className="border-y border-white/25 bg-black text-white shadow-[0_18px_50px_rgba(0,0,0,0.45)]"
           reverse
           slow
