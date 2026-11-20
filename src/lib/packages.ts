@@ -34,8 +34,8 @@ export const SETS: BookableSet[] = [
     side: "a",
     lineup: ["Aditya Chowhan — vocals & guitar"],
     options: [
-      { id: "solo-1h", hours: 1, price: 6000 },
-      { id: "solo-2h", hours: 2, price: 7200 },
+      { id: "solo-1h", hours: 1, price: 6120 },
+      { id: "solo-2h", hours: 2, price: 7344 },
     ],
   },
   {
@@ -50,9 +50,9 @@ export const SETS: BookableSet[] = [
       "Percussion",
     ],
     options: [
-      { id: "band-1h", hours: 1, price: 24000 },
-      { id: "band-2h", hours: 2, price: 30000 },
-      { id: "band-3h", hours: 3, price: 36000 },
+      { id: "band-1h", hours: 1, price: 24480 },
+      { id: "band-2h", hours: 2, price: 30600 },
+      { id: "band-3h", hours: 3, price: 36720 },
     ],
   },
 ];
@@ -94,5 +94,5 @@ export function rupees(amount: number): string {
   return `₹${rest},${last3}`;
 }
 
-/** The lowest price of a set, for "from ₹6,000". */
+/** The lowest price of a set, for "from ₹6,120". */
 export const fromPrice = (set: BookableSet) => Math.min(...set.options.map((o) => o.price));

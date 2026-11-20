@@ -16,6 +16,21 @@ function NavEq() {
   );
 }
 
+/** The same equalizer, inked black, playing inside the Book button. */
+function BookEq() {
+  return (
+    <span className="flex h-3 items-end gap-[2px]" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-full w-[2.5px] origin-bottom animate-eq bg-black"
+          style={{ animationDelay: `${i * 0.2}s`, animationDuration: `${0.8 + i * 0.15}s` }}
+        />
+      ))}
+    </span>
+  );
+}
+
 // Taller tap targets without a taller row: the padding is cancelled by an
 // equal negative margin, so the nav keeps the exact height it always had.
 const target = "-my-2 py-2";
@@ -35,16 +50,22 @@ export default function SiteNav({ page }: { page: "home" | "book" | "other" }) {
         href={home ? "#top" : "/"}
         className={cn(
           target,
-          "flex items-center gap-3 text-xs font-bold uppercase tracking-[0.35em] md:text-sm",
+          // tracked a touch tighter on the very smallest phones, so the Book
+          // button still has room to breathe beside it
+          "flex items-center gap-3 text-xs font-bold uppercase tracking-[0.26em] min-[360px]:tracking-[0.35em] md:text-sm",
         )}
       >
         <NavEq />
         adimakesmusic
       </a>
       <div className="flex items-center gap-5 text-[0.625rem] uppercase tracking-[0.3em] text-neutral-400 md:gap-8 md:text-xs">
-        {/* a phone has no room for all three next to the wordmark — the hero's
-            own "scroll for the sound" covers this one there */}
-        <a className={cn(target, "hidden transition-colors hover:text-white sm:block")} href={to("#sound")}>
+        {/* Below laptop width there's no room for all three next to the
+            wordmark and the Book button — the hero's own "scroll for the
+            sound" covers this one there. */}
+        <a
+          className={cn(target, "hidden transition-colors hover:text-white", booking ? "lg:block" : "sm:block")}
+          href={to("#sound")}
+        >
           the sound
         </a>
         <a
@@ -53,14 +74,28 @@ export default function SiteNav({ page }: { page: "home" | "book" | "other" }) {
         >
           contact
         </a>
+        {/* The one thing on every page meant to be seen first: the only solid
+            white shape in the black header, with a soft glow, the equalizer
+            playing inside it and a slow "live" pulse around it. On the
+            booking page itself it jumps straight to the sets. */}
         {booking && (
           <a
-            href="/book/"
+            href={page === "book" ? "#booking" : "/book/"}
             aria-current={page === "book" ? "page" : undefined}
             aria-label={`Book ${SITE.artist}`}
-            className="-my-2 rounded-full border border-white/70 px-4 py-2 text-white transition-colors hover:bg-white hover:text-black"
+            className="group/book relative -my-2.5 inline-flex items-center gap-2.5 rounded-full bg-white px-4 py-2.5 font-bold text-black shadow-[0_0_26px_rgba(255,255,255,0.3)] transition-[background-color,box-shadow] duration-300 hover:bg-neutral-200 hover:shadow-[0_0_38px_rgba(255,255,255,0.5)] focus-visible:outline-white md:px-5 md:py-3"
           >
-            book<span className="hidden sm:inline">&nbsp;aditya</span>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 animate-cta-ring rounded-full border border-white"
+            />
+            <BookEq />
+            <span>
+              book<span className="hidden sm:inline">&nbsp;aditya</span>
+            </span>
+            <span aria-hidden className="hidden transition-transform duration-300 group-hover/book:translate-x-1 sm:inline">
+              →
+            </span>
           </a>
         )}
       </div>

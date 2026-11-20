@@ -1,9 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
-import Divider from "@/components/divider";
 import Footer from "@/components/footer";
 import SiteNav from "@/components/site-nav";
 import SkipLinks from "@/components/skip-links";
-import PixelField from "@/components/ui/pixel-field";
 import {
   EMPTY_BOOKING,
   FIELD_ORDER,
@@ -51,8 +49,6 @@ const RIDER = [
   "A sound engineer",
 ];
 
-const BOOK_WORDS = ["book live", "solo", "the band", "delhi ncr", "adimakesmusic", "vol. 01"];
-
 const OPENING = "Hi! I'd like to book Aditya for a live set.";
 
 const LABEL = "text-[0.625rem] uppercase tracking-[0.4em] md:text-[0.6875rem]";
@@ -68,41 +64,6 @@ type Status =
   | { kind: "unverified"; paymentId: string }
   | { kind: "dismissed" }
   | { kind: "failed"; message: string };
-
-/* ───────────────────────────── hero ───────────────────────────── */
-
-function BookHero() {
-  return (
-    <header className="relative overflow-hidden bg-black text-white">
-      <PixelField />
-      <SiteNav page="book" />
-
-      <div className="relative z-10 flex flex-col items-center px-4 pb-28 pt-10 text-center md:pb-36 md:pt-14">
-        <p className="mb-6 text-[0.625rem] uppercase tracking-[0.55em] text-quiet md:mb-8 md:text-xs">
-          ( bookings ) — delhi ncr
-        </p>
-
-        {/* stacked by CSS, so the spaces between the lines are written out */}
-        <h1 className="relative font-display uppercase leading-[0.84]">
-          <span className="block text-[clamp(4rem,14vw,11rem)] tracking-[0.01em]">Book</span>{" "}
-          <span className="text-outline block text-[clamp(4rem,14vw,11rem)] tracking-[0.01em]">
-            Aditya
-          </span>{" "}
-          <span className="sr-only">Chowhan, </span>
-          <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[5deg] whitespace-nowrap font-accent text-[clamp(2rem,6.5vw,4.75rem)] lowercase italic tracking-normal drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
-            live,&nbsp;for&nbsp;you
-          </span>
-        </h1>
-
-        <p className="mt-9 max-w-md text-[0.625rem] font-medium uppercase leading-loose tracking-[0.28em] text-neutral-400 md:mt-11 md:text-xs">
-          bollywood, live — solo with a guitar,
-          <br />
-          or the whole five-piece band.
-        </p>
-      </div>
-    </header>
-  );
-}
 
 /* ──────────────────────────── the sets ─────────────────────────── */
 
@@ -179,9 +140,10 @@ function SetCard({
       </div>
 
       <div className="mt-6 flex items-baseline justify-between gap-4">
-        <h3 id={`bk-${set.id}-name`} className="font-display text-4xl uppercase leading-none md:text-5xl">
+        {/* the page's h1 is "the sets", so each set is a level below it */}
+        <h2 id={`bk-${set.id}-name`} className="font-display text-4xl uppercase leading-none md:text-5xl">
           {set.name}
-        </h3>
+        </h2>
         <span className={cn(LABEL, "text-quiet-ink")}>
           {COUNT[set.lineup.length] ?? set.lineup.length} on stage
         </span>
@@ -489,12 +451,13 @@ export default function BookPage() {
   return (
     <div className="relative min-h-svh overflow-x-clip bg-black font-grotesk">
       <SkipLinks to="#booking" />
-      <BookHero />
+      {/* just the site's nav — the page goes straight into the sets */}
+      <header className="bg-black text-white">
+        <SiteNav page="book" />
+      </header>
 
       <main id="booking" tabIndex={-1} className="focus:outline-none">
-        <Divider words={BOOK_WORDS} />
-
-        <div className="relative bg-[#f5f4f3] pb-24 pt-28 text-black md:pb-32 md:pt-36">
+        <div className="relative bg-[#f5f4f3] pb-24 pt-14 text-black md:pb-32 md:pt-20">
           <form
             noValidate
             onSubmit={(e) => {
@@ -508,9 +471,10 @@ export default function BookPage() {
               <div className="mb-10 flex flex-wrap items-end justify-between gap-6 md:mb-14">
                 <div>
                   <p className={cn(LABEL, "mb-3 tracking-[0.5em] text-quiet-ink")}>01 — pick your set</p>
-                  <h2 id="bk-sets-title" className="font-display text-5xl uppercase leading-[0.9] md:text-7xl">
+                  <h1 id="bk-sets-title" className="font-display text-5xl uppercase leading-[0.9] md:text-7xl">
+                    <span className="sr-only">Book Aditya Chowhan — </span>
                     the <span className="font-accent lowercase italic">sets</span>
-                  </h2>
+                  </h1>
                 </div>
                 <p className="max-w-[17rem] text-right text-[0.5625rem] uppercase leading-loose tracking-[0.25em] text-quiet-ink md:text-[0.6875rem]">
                   prices are per performance ♪<br />

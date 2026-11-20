@@ -17,7 +17,21 @@
   --animate-eq: eq 1s ease-in-out infinite;
   --animate-eq-bar: eq-bar 1.1s ease-in-out infinite;
   --animate-fade-in: fade-in 0.9s ease-out both;
+  --animate-cta-ring: cta-ring 2.8s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
 
+  /* the "live" pulse around the Book button — it grows a little more in height
+     than width, so the halo spreads evenly around a wide pill */
+  @keyframes cta-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.65;
+    }
+    65%,
+    100% {
+      transform: scale(1.16, 1.5);
+      opacity: 0;
+    }
+  }
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -71,10 +85,15 @@ body {
 }
 
 /* Keyboard focus is always visible, drawn in the ink of whichever half of the
-   page the element sits on. Mouse and touch never see it. */
-:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 4px;
+   page the element sits on. Mouse and touch never see it. It lives in the
+   base layer so a component can still recolour it (focus-visible:outline-white
+   for black text on a white button) — unlayered, it would win over every
+   utility. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
 }
 
 /* Hollow display type — the outline half of the black & white duo */
@@ -128,6 +147,11 @@ body {
     .animate-bounce
   ) {
   animation-play-state: paused !important;
+}
+/* a pulse frozen mid-way would just look like a stray outline — so it goes */
+:root[data-motion="off"] .animate-cta-ring {
+  animation: none !important;
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

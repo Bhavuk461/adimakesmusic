@@ -87,13 +87,13 @@ describe("POST /order", () => {
     const data = await res.json();
     assert.equal(data.orderId, "order_TEST123");
     assert.equal(data.keyId, "rzp_test_key");
-    assert.equal(data.amount, 30000 * 100, "The Band, 2 hours = ₹30,000 in paise");
+    assert.equal(data.amount, 30600 * 100, "The Band, 2 hours = ₹30,600 in paise");
     assert.match(data.description, /^The Band — 2 hours · \d{1,2} [A-Z][a-z]{2} \d{4}$/);
 
     assert.equal(sent.length, 1);
     assert.equal(sent[0].url, "https://api.razorpay.com/v1/orders");
     assert.equal(sent[0].auth, `Basic ${Buffer.from("rzp_test_key:test_secret_not_real").toString("base64")}`);
-    assert.equal(sent[0].body.amount, 3000000);
+    assert.equal(sent[0].body.amount, 3060000);
     assert.equal(sent[0].body.currency, "INR");
     assert.ok(String(sent[0].body.receipt).length <= 40, "Razorpay caps receipts at 40 characters");
     const notes = sent[0].body.notes as Record<string, string>;
@@ -104,7 +104,7 @@ describe("POST /order", () => {
   });
 
   it("prices every option from the package list", async () => {
-    const expected: Record<string, number> = { "solo-1h": 6000, "solo-2h": 7200, "band-1h": 24000, "band-2h": 30000, "band-3h": 36000 };
+    const expected: Record<string, number> = { "solo-1h": 6120, "solo-2h": 7344, "band-1h": 24480, "band-2h": 30600, "band-3h": 36720 };
     for (const [optionId, rupees] of Object.entries(expected)) {
       const res = await call("/order", { body: booking({ optionId }) });
       assert.equal((await res.json()).amount, rupees * 100, optionId);
