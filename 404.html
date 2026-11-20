@@ -14,15 +14,21 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/anton-latin-400-normal-Byf51wtH.woff2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/space-grotesk-latin-400-normal-CJ-V5oYT.woff2" />
-    <!-- restore a saved "pause motion" choice before anything paints -->
+    <!-- before anything paints: restore a saved "pause motion" choice, and note
+         whether this visit has already opened a page — the homepage's intro
+         plays only on the first one (sessionStorage: forgotten with the tab) -->
     <script>
       try {
         if (localStorage.getItem("motion") === "off") document.documentElement.dataset.motion = "off";
       } catch (e) {}
+      try {
+        if (sessionStorage.getItem("visited")) document.documentElement.dataset.intro = "seen";
+        else sessionStorage.setItem("visited", "1");
+      } catch (e) {}
     </script>
-    <script type="module" crossorigin src="/assets/notFound-Dq-yiFw4.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/mount-DeMyVK88.js">
-    <link rel="stylesheet" crossorigin href="/assets/mount-DJBBl1ii.css">
+    <script type="module" crossorigin src="/assets/notFound-CTrSvpfM.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/mount-Brga4sIX.js">
+    <link rel="stylesheet" crossorigin href="/assets/mount-hkGiQ57Y.css">
   </head>
   <body>
     <div id="root"><div class="relative flex min-h-svh flex-col bg-black font-grotesk text-white"><header><nav aria-label="Primary" class="z-20 flex items-center justify-between px-5 py-5 md:px-10 md:py-7"><a href="/" class="-my-2 py-2 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.26em] min-[360px]:tracking-[0.35em] md:text-sm"><span class="flex h-3.5 items-end gap-[3px]" aria-hidden="true"><span class="h-full w-[3px] origin-bottom animate-eq bg-white" style="animation-delay:0s;animation-duration:0.85s"></span><span class="h-full w-[3px] origin-bottom animate-eq bg-white" style="animation-delay:0.16s;animation-duration:0.99s"></span><span class="h-full w-[3px] origin-bottom animate-eq bg-white" style="animation-delay:0.32s;animation-duration:1.13s"></span><span class="h-full w-[3px] origin-bottom animate-eq bg-white" style="animation-delay:0.48s;animation-duration:1.27s"></span></span>adimakesmusic</a><div class="flex items-center gap-5 text-[0.625rem] uppercase tracking-[0.3em] text-neutral-400 md:gap-8 md:text-xs"><a class="-my-2 py-2 hidden transition-colors hover:text-white lg:block" href="/#sound">the sound</a><a class="-my-2 py-2 transition-colors hover:text-white hidden sm:block" href="/#contact">contact</a><a href="/book/" aria-label="Book Aditya Chowhan" class="group/book relative -my-2.5 inline-flex items-center gap-2.5 rounded-full bg-white px-4 py-2.5 font-bold text-black shadow-[0_0_26px_rgba(255,255,255,0.3)] transition-[background-color,box-shadow] duration-300 hover:bg-neutral-200 hover:shadow-[0_0_38px_rgba(255,255,255,0.5)] focus-visible:outline-white md:px-5 md:py-3"><span aria-hidden="true" class="pointer-events-none absolute inset-0 animate-cta-ring rounded-full border border-white"></span><span class="flex h-3 items-end gap-[2px]" aria-hidden="true"><span class="h-full w-[2.5px] origin-bottom animate-eq bg-black" style="animation-delay:0s;animation-duration:0.8s"></span><span class="h-full w-[2.5px] origin-bottom animate-eq bg-black" style="animation-delay:0.2s;animation-duration:0.9500000000000001s"></span><span class="h-full w-[2.5px] origin-bottom animate-eq bg-black" style="animation-delay:0.4s;animation-duration:1.1s"></span></span><span>book<span class="hidden sm:inline"> aditya</span></span><span aria-hidden="true" class="hidden transition-transform duration-300 group-hover/book:translate-x-1 sm:inline">→</span></a></div></nav></header><main class="flex flex-1 flex-col items-center justify-center px-4 pb-24 pt-10 text-center"><p class="mb-6 text-[0.625rem] uppercase tracking-[0.55em] text-quiet md:mb-8 md:text-xs">( 404 ) — off the record</p><h1 class="relative font-display uppercase leading-[0.84]"><span class="block text-[clamp(4.4rem,17vw,15rem)] tracking-[0.01em]">Wrong</span> <span class="text-outline block text-[clamp(4.4rem,17vw,15rem)] tracking-[0.01em]">Track</span></h1><p class="mt-9 max-w-md text-[0.625rem] font-medium uppercase leading-loose tracking-[0.28em] text-neutral-400 md:mt-11 md:text-xs">this page isn’t on the record.</p><a href="/" class="mt-10 rounded-full border border-white/70 px-6 py-3 text-[0.625rem] uppercase tracking-[0.3em] transition-colors hover:bg-white hover:text-black md:text-xs">back to the sound <span aria-hidden="true">→</span></a></main><div aria-hidden="true" class="grain pointer-events-none fixed inset-0 z-50 opacity-[0.06]"></div></div></div>

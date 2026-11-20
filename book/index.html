@@ -17,10 +17,16 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/anton-latin-400-normal-Byf51wtH.woff2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/space-grotesk-latin-400-normal-CJ-V5oYT.woff2" />
-    <!-- restore a saved "pause motion" choice before anything paints -->
+    <!-- before anything paints: restore a saved "pause motion" choice, and note
+         whether this visit has already opened a page — the homepage's intro
+         plays only on the first one (sessionStorage: forgotten with the tab) -->
     <script>
       try {
         if (localStorage.getItem("motion") === "off") document.documentElement.dataset.motion = "off";
+      } catch (e) {}
+      try {
+        if (sessionStorage.getItem("visited")) document.documentElement.dataset.intro = "seen";
+        else sessionStorage.setItem("visited", "1");
       } catch (e) {}
     </script>
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/instrument-serif-latin-400-italic-DKMiL14s.woff2" />
@@ -37,10 +43,10 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Book Aditya Chowhan — live, solo or with the band" />
     <meta name="twitter:image" content="https://adimakesmusic.in/og.png" />
-    <script type="module" crossorigin src="/assets/book-Dvhr7mY7.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/mount-DeMyVK88.js">
-    <link rel="modulepreload" crossorigin href="/assets/skip-links-D0QCCIDM.js">
-    <link rel="stylesheet" crossorigin href="/assets/mount-DJBBl1ii.css">
+    <script type="module" crossorigin src="/assets/book-DVthxQe4.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/mount-Brga4sIX.js">
+    <link rel="modulepreload" crossorigin href="/assets/skip-links-DBOfqtUY.js">
+    <link rel="stylesheet" crossorigin href="/assets/mount-hkGiQ57Y.css">
       <meta name="description" content="Book Aditya Chowhan live — solo from ₹6,120 or the five-piece band from ₹24,480. Bollywood sets for weddings, parties and corporate events in Delhi NCR." />
     <meta property="og:description" content="Book Aditya Chowhan live — solo from ₹6,120 or the five-piece band from ₹24,480. Bollywood sets for weddings, parties and corporate events in Delhi NCR." />
     <meta name="twitter:description" content="Book Aditya Chowhan live — solo from ₹6,120 or the five-piece band from ₹24,480. Bollywood sets for weddings, parties and corporate events in Delhi NCR." />
