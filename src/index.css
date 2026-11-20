@@ -132,6 +132,12 @@ body {
     visibility: hidden;
   }
 }
+/* …and it belongs to the first page of a visit only. On any page after that
+   (back from /book/, a reload) the script in <head> has already marked
+   <html data-intro="seen">, so the curtain never paints at all. */
+:root[data-intro="seen"] [data-loader] {
+  display: none;
+}
 
 /* The visitor's own off-switch (footer → "pause motion"). It freezes the
    looping animations that start by themselves, in place; one-shot fades and

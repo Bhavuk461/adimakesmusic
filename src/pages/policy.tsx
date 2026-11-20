@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export type PolicyId = "terms" | "privacy" | "refunds" | "shipping";
 
 /** Bump when any policy text changes. */
-const UPDATED = "20 november 2026";
+const UPDATED = "21 november 2026";
 
 const LABEL = "text-[0.625rem] uppercase tracking-[0.4em] md:text-[0.6875rem]";
 
@@ -178,8 +178,9 @@ export const POLICIES: Record<PolicyId, Policy> = {
         heading: "On this website",
         body: (
           <p>
-            The site uses no cookies, analytics or trackers. It remembers one thing, in your own browser:
-            whether you&rsquo;ve paused the animations. Our host, GitHub Pages, keeps standard server logs,
+            The site uses no cookies, analytics or trackers. It remembers two small things, in your own
+            browser: whether you&rsquo;ve paused the animations, and &mdash; only until you close the tab
+            &mdash; that you&rsquo;ve already seen the intro, so it doesn&rsquo;t play again. Our host, GitHub Pages, keeps standard server logs,
             and Razorpay&rsquo;s checkout may set its own cookies when you pay.
           </p>
         ),

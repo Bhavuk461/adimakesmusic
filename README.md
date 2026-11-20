@@ -36,7 +36,10 @@ canonical URL, share-card tags and structured data live there, in plain HTML.
 | `404.html` | `src/not-found.tsx` | `src/pages/not-found.tsx` |
 
 Tags every page shares (icons, font preloads, the motion preference) are
-injected at `<!-- shared-head -->` by a small plugin in `vite.config.ts`.
+injected at `<!-- shared-head -->` by a small plugin in `vite.config.ts`. Its
+inline script also marks `<html data-intro="seen">` on every page after the
+first of a visit, which is how the homepage's loading intro plays only once
+(on a first visit, and only for as long as the page takes to load).
 The booking page's description and price structured data are generated from
 `src/lib/packages.ts` during prerendering, so they always match the prices.
 

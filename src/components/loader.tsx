@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { SiriWave } from "@/components/ui/siri-wave";
-import { motionPaused } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-const MIN_MS = 2400; // long enough for the wave to go through a full swell
 const MAX_MS = 8000; // a stalled font or image never holds the site hostage
 const FADE_MS = 900;
 
@@ -14,9 +12,22 @@ const WAVE_BOX = "min(380px, 86vw)";
 type Phase = "loading" | "leaving" | "done";
 
 /**
- * Full-screen intro that covers the page until its fonts and images have
- * arrived, then dissolves to reveal the hero. The site renders underneath the
- * whole time, so everything is already in place when the curtain lifts.
+ * Whether this visit has already opened a page. Decided before first paint by
+ * the inline script in every page's <head> (vite.config.ts).
+ */
+const introSeen = () => document.documentElement.dataset.intro === "seen";
+
+/**
+ * Full-screen intro that covers the homepage only while it is loading: the
+ * moment its styles, fonts, images and script have all arrived, it dissolves
+ * to reveal the hero. There is no minimum time on screen. The site renders
+ * underneath the whole time, so everything is already in place when the
+ * curtain lifts.
+ *
+ * It plays once per visit, on the first page opened in the tab. Coming back to
+ * the homepage after that, or reloading it, goes straight to the site: CSS
+ * keeps the curtain from ever painting ([data-intro] in index.css) and this
+ * component steps aside without starting the wave.
  *
  * The curtain itself is part of the prerendered HTML — the page opens black,
  * exactly as it did when it was rendered in the browser — and the WebGL wave
@@ -33,6 +44,7 @@ export default function Loader() {
   const [typeReady, setTypeReady] = useState(false);
 
   useEffect(() => {
+    if (introSeen()) return; // no curtain, so no wave either
     // The viewport can still report 0 this early (e.g. a tab that hasn't laid
     // out yet), so fall back to the full size rather than a 0px canvas.
     const vw = window.innerWidth || document.documentElement.clientWidth;
@@ -54,16 +66,20 @@ export default function Loader() {
   }, []);
 
   useEffect(() => {
+    // not the first page of this visit — CSS already hides the curtain, so
+    // just take it out of the page
+    if (introSeen()) {
+      setPhase("done");
+      return;
+    }
+
     const root = document.documentElement;
     const prevOverflow = root.style.overflow;
     root.style.overflow = "hidden";
 
     let cancelled = false;
-    // anyone who has asked for less motion — in the OS or with the site's own
-    // switch — gets the page as soon as it is ready, without the showpiece
-    const calm =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches || motionPaused();
-
+    // "load" waits for every image, stylesheet and script on the page; the
+    // fonts can still be settling after it, so wait for those too
     const pageLoaded =
       document.readyState === "complete"
         ? Promise.resolve()
@@ -71,10 +87,9 @@ export default function Loader() {
             window.addEventListener("load", () => resolve(), { once: true }),
           );
     const fontsLoaded = document.fonts ? document.fonts.ready.then(() => {}) : Promise.resolve();
-    const minimum = new Promise<void>((resolve) => setTimeout(resolve, calm ? 0 : MIN_MS));
     const ceiling = new Promise<void>((resolve) => setTimeout(resolve, MAX_MS));
 
-    void Promise.race([Promise.all([pageLoaded, fontsLoaded, minimum]), ceiling]).then(() => {
+    void Promise.race([Promise.all([pageLoaded, fontsLoaded]), ceiling]).then(() => {
       if (cancelled) return;
       root.style.overflow = prevOverflow;
       setPhase("leaving");

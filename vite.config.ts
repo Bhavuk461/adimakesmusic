@@ -18,10 +18,16 @@ const SHARED_HEAD = `
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2" />
-    <!-- restore a saved "pause motion" choice before anything paints -->
+    <!-- before anything paints: restore a saved "pause motion" choice, and note
+         whether this visit has already opened a page — the homepage's intro
+         plays only on the first one (sessionStorage: forgotten with the tab) -->
     <script>
       try {
         if (localStorage.getItem("motion") === "off") document.documentElement.dataset.motion = "off";
+      } catch (e) {}
+      try {
+        if (sessionStorage.getItem("visited")) document.documentElement.dataset.intro = "seen";
+        else sessionStorage.setItem("visited", "1");
       } catch (e) {}
     </script>`;
 
