@@ -44,16 +44,17 @@ export const POLICIES: Record<PolicyId, Policy> = {
     label: "terms & conditions",
     title: "Terms & conditions",
     intro:
-      "These terms apply when you book Aditya Chowhan — solo or with his band — through adimakesmusic.in, WhatsApp or email. By booking, you agree to them.",
+      "These terms apply when you book Aditya Chowhan — solo or with his band — on adimakesmusic.in. By booking, you agree to them.",
     sections: [
       {
         heading: "Booking",
         body: (
           <p>
-            Choose a set and its length on the <a href="/book/" className={link}>booking page</a> and send
-            us your event details. Your booking is confirmed once we confirm the date with you in writing,
-            on WhatsApp or by email. If you pay online and we can&rsquo;t take your date, you get a full
-            refund.
+            Choose a set and its length on the <a href="/book/" className={link}>booking page</a>, add your
+            event details and pay online. Your booking is confirmed the moment the payment goes through: the
+            page confirms it, and Razorpay emails a receipt if you gave an email address. Each date takes one
+            booking, so a date that&rsquo;s already taken can&rsquo;t be booked again. If we ever can&rsquo;t
+            perform on your date, you get a full refund.
           </p>
         ),
       },
@@ -62,8 +63,9 @@ export const POLICIES: Record<PolicyId, Policy> = {
         body: (
           <p>
             Prices are listed in Indian rupees on the booking page and are per performance, for the length
-            of set you choose. The final scope — timings, set list and setup — is confirmed when you book.
-            Online payments are processed by Razorpay; we never see or store your card, UPI or bank details.
+            of set you choose; the full amount is paid when you book. We&rsquo;ll call you before the event to
+            settle the set list, timings on the day and the setup. Online payments are processed by
+            Razorpay; we never see or store your card, UPI or bank details.
           </p>
         ),
       },
@@ -137,8 +139,9 @@ export const POLICIES: Record<PolicyId, Policy> = {
         heading: "What we collect",
         body: (
           <p>
-            When you send a booking request or pay: your name, your phone or WhatsApp number, your email if
-            you give it, and your event details — date, time, venue, the occasion and anything you tell us.
+            When you book: your name, your phone or WhatsApp number, your email if you give it, and your
+            event details — date, start time, venue, the occasion and anything you tell us. They&rsquo;re
+            stored with your payment at Razorpay, our payment processor.
           </p>
         ),
       },
@@ -169,8 +172,9 @@ export const POLICIES: Record<PolicyId, Policy> = {
         heading: "Who sees it",
         body: (
           <p>
-            Aditya, the musicians playing your event and, where the setup needs it, your venue. Messages
-            travel through WhatsApp and Gmail. We don&rsquo;t sell or rent your information.
+            Aditya and his team, through a private, password-protected bookings page; the musicians playing
+            your event; and, where the setup needs it, your venue. If you message us, that goes through
+            WhatsApp or Gmail. We don&rsquo;t sell or rent your information.
           </p>
         ),
       },
@@ -208,7 +212,12 @@ export const POLICIES: Record<PolicyId, Policy> = {
     sections: [
       {
         heading: "If we can't take your date",
-        body: <p>If you&rsquo;ve paid and Aditya can&rsquo;t confirm your date, you get a full refund.</p>,
+        body: (
+          <p>
+            Booked dates can&rsquo;t be booked twice, but if two payments ever land on the same date, the
+            later one gets a full refund.
+          </p>
+        ),
       },
       {
         heading: "If we cancel",
@@ -258,8 +267,8 @@ export const POLICIES: Record<PolicyId, Policy> = {
         heading: "Confirmation",
         body: (
           <p>
-            After you book, we confirm your date and details on WhatsApp or by email — that confirmation is
-            your booking record. Razorpay also sends a receipt for online payments.
+            Your booking is confirmed on screen as soon as you pay, with a payment ID you can keep; Razorpay
+            emails the receipt if you gave an email address. We call you before the event to plan the music.
           </p>
         ),
       },

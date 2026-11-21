@@ -5,7 +5,7 @@ export type BookingDetails = {
   optionId: string;
   /** yyyy-mm-dd, from the date input */
   date: string;
-  /** hh:mm, from the time input — optional */
+  /** hh:mm, 24-hour, from the start-time pads */
   time: string;
   event: string;
   venue: string;
@@ -43,19 +43,49 @@ export const FIELD_ORDER: BookingField[] = [
   "notes",
 ];
 
+const p2 = (n: number) => String(n).padStart(2, "0");
+
 /** Today in the visitor's own time zone, as yyyy-mm-dd. */
 export function todayISO(now = new Date()) {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+  return `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`;
+}
+
+/** The time now, as hh:mm. */
+const nowHHMM = (now = new Date()) => `${p2(now.getHours())}:${p2(now.getMinutes())}`;
+
+/**
+ * Start times the booking page offers: from 10 in the morning to 11 at night,
+ * in two rows of seven, at any quarter hour.
+ */
+export const START_HOURS = {
+  day: [10, 11, 12, 13, 14, 15, 16],
+  evening: [17, 18, 19, 20, 21, 22, 23],
+} as const;
+export const START_MINUTES = ["00", "15", "30", "45"] as const;
+
+/** 20 → { hour: "8", half: "pm" }; noon reads as noon. */
+export function clockHour(h: number) {
+  return { hour: String(h % 12 || 12), half: h === 12 ? "noon" : h < 12 ? "am" : "pm" };
 }
 
 const digits = (s: string) => s.replace(/\D/g, "");
 
-export function validateBooking(d: BookingDetails, today = todayISO()): BookingErrors {
+/**
+ * `booked` — dates the booking server says are already taken. `now` is only
+ * for "that time has already passed" on a booking for today.
+ */
+export function validateBooking(
+  d: BookingDetails,
+  { booked = [] as readonly string[], now = new Date() } = {},
+): BookingErrors {
   const e: BookingErrors = {};
+  const today = todayISO(now);
   if (!findOption(d.optionId)) e.optionId = "pick a set and how long";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d.date)) e.date = "add the date of your event";
   else if (d.date < today) e.date = "that date has already passed";
+  else if (booked.includes(d.date)) e.date = "aditya's already booked that day — pick another date";
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(d.time)) e.time = "pick a start time";
+  else if (d.date === today && d.time <= nowHHMM(now)) e.time = "that time has already passed";
   if (!d.event) e.event = "tell us what the occasion is";
   if (d.venue.trim().length < 2) e.venue = "add the venue and city";
   if (d.name.trim().length < 2) e.name = "add your name";
@@ -69,18 +99,27 @@ export function validateBooking(d: BookingDetails, today = todayISO()): BookingE
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+/** "20:30" → "8:30 pm" */
+export function timeLabel(time: string) {
+  const t = /^(\d{2}):(\d{2})$/.exec(time);
+  if (!t) return "";
+  const h = Number(t[1]);
+  return `${h % 12 || 12}:${t[2]} ${h < 12 ? "am" : "pm"}`;
+}
+
+/** yyyy-mm-dd → its parts, for laying a date out in pieces. */
+export function dateParts(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return { year: y, month: MONTHS[m - 1], day: d, weekday: DAYS[new Date(y, m - 1, d).getDay()] };
+}
+
 /** "Sat, 14 Feb 2027" — and ", 8:00 pm" when a start time is given. */
 export function describeWhen(date: string, time: string) {
-  const [y, m, d] = date.split("-").map(Number);
-  if (!y || !m || !d) return "";
-  const day = new Date(y, m - 1, d);
-  let out = `${DAYS[day.getDay()]}, ${d} ${MONTHS[m - 1]} ${y}`;
-  const t = /^(\d{2}):(\d{2})$/.exec(time);
-  if (t) {
-    const h = Number(t[1]);
-    out += `, ${h % 12 || 12}:${t[2]} ${h < 12 ? "am" : "pm"}`;
-  }
-  return out;
+  const p = dateParts(date);
+  if (!p) return "";
+  const t = timeLabel(time);
+  return `${p.weekday}, ${p.day} ${p.month} ${p.year}${t ? `, ${t}` : ""}`;
 }
 
 /** Shows +91 numbers the way people write them: +91 99581 77449. */
@@ -112,4 +151,36 @@ export function bookingMessage(d: BookingDetails, opening: string) {
 export function bookingSubject(d: BookingDetails) {
   const pick = findOption(d.optionId);
   return `Booking — ${pick ? optionLabel(pick.set, pick.option) : "live set"}, ${describeWhen(d.date, "")}`;
+}
+
+/**
+ * The booked performance as a calendar file (.ics), for the "add to calendar"
+ * button once it's paid. Times are India time, written out in UTC.
+ */
+export function calendarFile(d: BookingDetails, reference: string) {
+  const pick = findOption(d.optionId);
+  const [y, m, day] = d.date.split("-").map(Number);
+  const [hh, mm] = d.time.split(":").map(Number);
+  const start = Date.UTC(y, m - 1, day, hh, mm) - 5.5 * 3600_000;
+  const end = start + (pick?.option.hours ?? 1) * 3600_000;
+  const stamp = (t: number) => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  // commas, semicolons and backslashes are special in .ics text
+  const esc = (s: string) => s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\r?\n/g, "\\n");
+  const title = `Aditya Chowhan live${pick ? ` — ${optionLabel(pick.set, pick.option)}` : ""}`;
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//adimakesmusic//booking//EN",
+    "BEGIN:VEVENT",
+    `UID:${reference}@adimakesmusic.in`,
+    `DTSTAMP:${stamp(Date.now())}`,
+    `DTSTART:${stamp(start)}`,
+    `DTEND:${stamp(end)}`,
+    `SUMMARY:${esc(title)}`,
+    `LOCATION:${esc(d.venue.trim())}`,
+    `DESCRIPTION:${esc(`${d.event}. Booked on adimakesmusic.in — payment ${reference}.`)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+    "",
+  ].join("\r\n");
 }

@@ -2,19 +2,22 @@ import { useEffect, useState, type ReactNode } from "react";
 import Footer from "@/components/footer";
 import SiteNav from "@/components/site-nav";
 import SkipLinks from "@/components/skip-links";
+import StartTime from "@/components/start-time";
 import {
   EMPTY_BOOKING,
   FIELD_ORDER,
   bookingMessage,
   bookingSubject,
+  calendarFile,
   describeWhen,
+  prettyPhone,
   todayISO,
   validateBooking,
   type BookingDetails,
   type BookingErrors,
   type BookingField,
 } from "@/lib/booking";
-import { pay } from "@/lib/checkout";
+import { availability, pay } from "@/lib/checkout";
 import {
   EVENT_TYPES,
   SETS,
@@ -60,10 +63,18 @@ type Status =
   | { kind: "invalid" }
   | { kind: "sent"; via: "whatsapp" | "email" }
   | { kind: "working" }
-  | { kind: "paid"; paymentId: string }
-  | { kind: "unverified"; paymentId: string }
+  | { kind: "paid"; paymentId: string; orderId: string }
+  | { kind: "unverified"; paymentId: string; orderId: string }
   | { kind: "dismissed" }
   | { kind: "failed"; message: string };
+
+/**
+ * Whether bookings are taken online. "checking" until the booking server
+ * answers — the prerendered page assumes it will say yes. "off" while the
+ * server isn't set up or can't be reached: then (and only then) the page
+ * falls back to sending the booking over WhatsApp or email.
+ */
+type Online = "checking" | "on" | "off";
 
 /* ──────────────────────────── the sets ─────────────────────────── */
 
@@ -262,7 +273,8 @@ const quietBtn = cn(
   onBlack,
 );
 
-function statusMessage(status: Status, price: string): string {
+function statusMessage(status: Status, price: string, details: BookingDetails): string {
+  const phone = prettyPhone(details.phone);
   switch (status.kind) {
     case "invalid":
       return "( ! ) a few details are missing — they're marked above.";
@@ -273,16 +285,32 @@ function statusMessage(status: Status, price: string): string {
     case "working":
       return "opening secure checkout…";
     case "paid":
-      return `${price} received — payment id ${status.paymentId}. we'll confirm the details on whatsapp shortly.`;
+      return (
+        `you're booked — ${price} paid, payment id ${status.paymentId}. ` +
+        (details.email.trim() ? `razorpay is emailing your receipt to ${details.email.trim()}. ` : "") +
+        `we'll call you on ${phone} before the night to plan the music.`
+      );
     case "unverified":
-      return `your payment went through (id ${status.paymentId}), but we couldn't confirm it automatically. send us that id on whatsapp and we'll take it from there.`;
+      return `your payment went through — payment id ${status.paymentId}. it can take a minute to show on our side, but your date is held. we'll call you on ${phone} to confirm.`;
     case "dismissed":
       return "checkout closed — nothing was charged.";
     case "failed":
-      return `( ! ) ${status.message} — try again, or book on whatsapp.`;
+      return `( ! ) ${status.message.replace(/\.$/, "")}.`;
     default:
       return "";
   }
+}
+
+/** Saves the booked night as a calendar file. */
+function saveToCalendar(details: BookingDetails, reference: string) {
+  const url = URL.createObjectURL(new Blob([calendarFile(details, reference)], { type: "text/calendar" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `aditya-chowhan-${details.date}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function Ticket({
@@ -302,19 +330,7 @@ function Ticket({
     .filter(Boolean)
     .join(" · ");
   const done = status.kind === "paid" || status.kind === "unverified";
-  const message = statusMessage(status, price);
-
-  const followUp = () =>
-    window.open(
-      whatsappUrl(
-        bookingMessage(
-          details,
-          `Hi! I just paid ${price} to book Aditya (payment id ${"paymentId" in status ? status.paymentId : ""}).`,
-        ),
-      ),
-      "_blank",
-      "noopener,noreferrer",
-    );
+  const message = statusMessage(status, price, details);
 
   return (
     <div className="mt-16 overflow-hidden rounded-3xl bg-black text-white md:mt-20">
@@ -343,20 +359,23 @@ function Ticket({
 
       <div className="flex flex-col gap-3 border-t border-white/15 p-6 sm:flex-row sm:flex-wrap sm:items-center md:gap-4 md:p-10">
         {done ? (
-          <button type="button" onClick={followUp} className={secondaryBtn}>
-            message us on whatsapp
+          <button
+            type="button"
+            onClick={() => "paymentId" in status && saveToCalendar(details, status.paymentId)}
+            className={secondaryBtn}
+          >
+            add to calendar <span aria-hidden>↓</span>
           </button>
         ) : payOnline ? (
           <>
             <button type="submit" disabled={status.kind === "working"} className={primaryBtn}>
               {status.kind === "working" ? "opening checkout…" : price ? `pay ${price} & book` : "pay & book"}
             </button>
-            <button type="button" onClick={() => onAct("whatsapp")} className={secondaryBtn}>
-              book on whatsapp instead
-            </button>
-            <button type="button" onClick={() => onAct("email")} className={quietBtn}>
-              or email
-            </button>
+            <p className={cn(LABEL, "leading-relaxed text-neutral-400 sm:ml-2")}>
+              instant &amp; secure, by razorpay
+              <br />
+              upi · cards · netbanking · wallets
+            </p>
           </>
         ) : (
           <>
@@ -387,6 +406,7 @@ function Ticket({
 /* ───────────────────────────── the page ──────────────────────────── */
 
 export default function BookPage() {
+  const endpoint = SITE.payments.endpoint;
   const [details, setDetails] = useState<BookingDetails>(EMPTY_BOOKING);
   const [errors, setErrors] = useState<BookingErrors>({});
   // validation runs live only once someone has tried to send
@@ -394,28 +414,68 @@ export default function BookPage() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   // client-only, so the prerendered HTML doesn't bake in the build date
   const [minDate, setMinDate] = useState<string>();
-  const payOnline = Boolean(SITE.payments.endpoint);
+  const [online, setOnline] = useState<Online>(endpoint ? "checking" : "off");
+  // dates the booking server says are already taken
+  const [booked, setBooked] = useState<string[]>([]);
+  const payOnline = online !== "off";
 
   useEffect(() => setMinDate(todayISO()), []);
+
+  useEffect(() => {
+    if (!endpoint) return;
+    let alive = true;
+    availability(endpoint)
+      .then((a) => {
+        if (!alive) return;
+        setOnline(a.configured ? "on" : "off");
+        setBooked(a.booked);
+      })
+      .catch(() => alive && setOnline("off"));
+    return () => {
+      alive = false;
+    };
+  }, [endpoint]);
+
+  // Before anyone has pressed the button, the only error shown is a taken
+  // date — that one is worth knowing straight away. After, all of them.
+  const check = (d: BookingDetails, takenDates: string[], tried: boolean) => {
+    const errs = validateBooking(d, { booked: takenDates });
+    return tried ? errs : errs.date && takenDates.includes(d.date) ? { date: errs.date } : {};
+  };
+
+  // when the list of taken dates arrives (or grows), re-check the date picked
+  useEffect(() => {
+    setErrors(check(details, booked, attempted));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on a new list
+  }, [booked]);
 
   const update = (field: BookingField, value: string) => {
     const next = { ...details, [field]: value };
     setDetails(next);
-    if (attempted) setErrors(validateBooking(next));
+    setErrors(check(next, booked, attempted));
     if (status.kind !== "working" && status.kind !== "paid" && status.kind !== "unverified")
       setStatus({ kind: "idle" });
   };
 
+  const focusField = (field: BookingField) => {
+    const el =
+      field === "optionId"
+        ? document.getElementById(`bk-${details.optionId || SETS[0].options[0].id}`)
+        : field === "time"
+          ? document.querySelector<HTMLInputElement>('input[name="bk-hour"]:checked') ??
+            document.querySelector<HTMLInputElement>('input[name="bk-hour"]')
+          : document.getElementById(`bk-${field}`);
+    el?.focus();
+  };
+
   const focusFirstError = (errs: BookingErrors) => {
     const first = FIELD_ORDER.find((f) => errs[f]);
-    if (!first) return false;
-    const id = first === "optionId" ? `bk-${details.optionId || SETS[0].options[0].id}` : `bk-${first}`;
-    document.getElementById(id)?.focus();
-    return true;
+    if (first) focusField(first);
+    return Boolean(first);
   };
 
   const act = async (via: "pay" | "whatsapp" | "email") => {
-    const errs = validateBooking(details);
+    const errs = validateBooking(details, { booked });
     setErrors(errs);
     setAttempted(true);
     if (focusFirstError(errs)) {
@@ -435,13 +495,23 @@ export default function BookPage() {
     }
 
     setStatus({ kind: "working" });
-    const result = await pay(SITE.payments.endpoint, details);
+    const result = await pay(endpoint, details);
+    if (result.status === "failed") {
+      const field = result.field as BookingField | undefined;
+      if (field && FIELD_ORDER.includes(field)) {
+        // e.g. the date was taken while they were filling the form in
+        if (field === "date") setBooked((b) => (b.includes(details.date) ? b : [...b, details.date]));
+        setErrors((e) => ({ ...e, [field]: result.message.replace(/\.$/, "").toLowerCase() }));
+        focusField(field);
+      }
+      if (result.off) setOnline("off");
+      setStatus({ kind: "failed", message: result.message });
+      return;
+    }
     setStatus(
       result.status === "paid" || result.status === "unverified"
-        ? { kind: result.status, paymentId: result.paymentId }
-        : result.status === "failed"
-          ? { kind: "failed", message: result.message }
-          : { kind: "dismissed" },
+        ? { kind: result.status, paymentId: result.paymentId, orderId: result.orderId }
+        : { kind: "dismissed" },
     );
   };
 
@@ -519,6 +589,8 @@ export default function BookPage() {
                 </p>
               </div>
 
+              {/* Left: date, occasion, venue, name. Right: the start-time pads,
+                  standing as tall as those four. Tab order runs down the page. */}
               <div className="grid gap-x-10 gap-y-9 md:grid-cols-2">
                 <Field id="bk-date" label="date of the event" error={errors.date}>
                   <input
@@ -531,15 +603,9 @@ export default function BookPage() {
                     {...err("date")}
                   />
                 </Field>
-                <Field id="bk-time" label="start time" optional>
-                  <input
-                    id="bk-time"
-                    type="time"
-                    value={details.time}
-                    onChange={(e) => update("time", e.target.value)}
-                    className={inputClass}
-                  />
-                </Field>
+                <div className="md:row-span-4">
+                  <StartTime value={details.time} onChange={(t) => update("time", t)} error={errors.time} />
+                </div>
                 <Field id="bk-event" label="the occasion" error={errors.event}>
                   <div className="relative">
                     <select
@@ -610,7 +676,7 @@ export default function BookPage() {
                     {...err("email")}
                   />
                 </Field>
-                <Field id="bk-notes" label="anything we should know" optional>
+                <Field id="bk-notes" label="anything we should know" optional className="md:col-span-2">
                   <textarea
                     id="bk-notes"
                     rows={1}
@@ -627,6 +693,7 @@ export default function BookPage() {
             <Ticket details={details} status={status} payOnline={payOnline} onAct={(v) => void act(v)} />
 
             <p className="mt-6 text-[0.5625rem] uppercase leading-loose tracking-[0.25em] text-quiet-ink md:text-[0.625rem]">
+              {payOnline && <>booking is instant — once it&rsquo;s paid, the date is yours. </>}
               not sure which set? ask first —{" "}
               <a
                 href={whatsappUrl("Hi Aditya! I have a question about booking a live set.")}

@@ -150,7 +150,8 @@ body {
     .animate-spin-slower,
     .animate-eq,
     .animate-eq-bar,
-    .animate-bounce
+    .animate-bounce,
+    .animate-pulse
   ) {
   animation-play-state: paused !important;
 }

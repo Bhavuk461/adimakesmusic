@@ -4,6 +4,7 @@ import App from "./App";
 import { SETS, fromPrice, hoursLabel, rupees } from "@/lib/packages";
 import { SITE } from "@/lib/site";
 import BookPage from "@/pages/book";
+import DashboardPage from "@/pages/dashboard";
 import NotFoundPage from "@/pages/not-found";
 import PolicyPage, { type PolicyId } from "@/pages/policy";
 
@@ -97,4 +98,6 @@ export const pages: Record<string, PageBuild> = {
   "privacy/index.html": policy("privacy"),
   "refunds/index.html": policy("refunds"),
   "shipping/index.html": policy("shipping"),
+  // only the signed-out shell: bookings never reach the HTML
+  "dashboard/index.html": { render: render(<DashboardPage />) },
 };

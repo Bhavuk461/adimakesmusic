@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Bookings | adimakesmusic</title>
+    <!-- Private: the bookings dashboard. Kept out of search and the sitemap; the
+         page itself holds nothing — bookings load only after the password. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+
+    <!-- shared-head -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>The bookings dashboard needs JavaScript.</noscript>
+    <script type="module" src="/src/dashboard.tsx"></script>
+  </body>
+</html>

@@ -34,6 +34,7 @@ canonical URL, share-card tags and structured data live there, in plain HTML.
 | `book/index.html` | `src/book.tsx` | `src/pages/book.tsx` |
 | `terms/`, `privacy/`, `refunds/`, `shipping/` | `src/policy.tsx` | `src/pages/policy.tsx` |
 | `404.html` | `src/not-found.tsx` | `src/pages/not-found.tsx` |
+| `dashboard/index.html` | `src/dashboard.tsx` | `src/pages/dashboard.tsx` |
 
 Tags every page shares (icons, font preloads, the motion preference) are
 injected at `<!-- shared-head -->` by a small plugin in `vite.config.ts`. Its
@@ -84,29 +85,42 @@ The two square cover photos go in `public/pics/` and are switched on in
 `COVERS` at the top of `src/pages/book.tsx`; until then each set shows a
 designed record sleeve.
 
-**Without online payment** (`VITE_PAYMENTS_ENDPOINT` unset), "book" sends the
-filled-in booking as a WhatsApp message (or email) to the contact in `site.ts`.
+Booking is **automatic, through Razorpay**: the client picks a set, a date and a
+start time, fills in the details and pays — the moment the payment goes
+through, the booking is confirmed on screen (with an "add to calendar" file)
+and that date is closed to anyone else. No WhatsApp or email round trip.
 
-**With online payment**, a small Cloudflare Worker in `worker/` holds the
-Razorpay secret. It creates each order — pricing it itself from
-`packages.ts`, so the amount can't be edited in the browser — and checks
-Razorpay's signature afterwards. The booking details travel with the order as
-Razorpay *notes*, so each payment in the Razorpay dashboard shows who booked,
-for when and where.
+The booking server is a small Cloudflare Worker in `worker/`
+(`https://adimakesmusic-pay.nicegatchfrog.workers.dev`, set in
+`.env.production`). It holds the Razorpay secret, prices each order itself from
+`packages.ts` (so the amount can't be edited in the browser), checks Razorpay's
+signature afterwards, and asks Razorpay to capture payments automatically.
+
+There's no database. Each booking *is* a Razorpay order — the details travel as
+order *notes* — so the dashboard and the "already booked" check read straight
+from Razorpay, and a refund in the Razorpay dashboard frees the date again.
+`BOOKINGS_PER_DAY` in `worker/wrangler.toml` sets how many paid bookings fill a
+date (1).
+
+**The dashboard** is at `/dashboard/` (noindex, not linked anywhere): upcoming
+shows, played ones, checkouts that were opened but never paid, search and a CSV
+export. It's locked with its own password, kept on Cloudflare.
 
 ```bash
-npm run pay:test     # worker tests — no keys, no network
-npm run pay:login    # once: log the Cloudflare CLI in (opens the browser)
-npm run pay:deploy   # deploy the worker; prints its URL
-npm run pay:secret   # once: paste the Razorpay key secret (stored encrypted on Cloudflare)
-npm run pay:logs     # watch the worker live
+npm run pay:setup     # once: deploy + store the Razorpay keys and dashboard password
+npm run pay:password  # a new dashboard password
+npm run pay:deploy    # redeploy the worker after changing worker/ or packages.ts
+npm run pay:test      # worker tests — no keys, no network
+npm run pay:logs      # watch the worker live
 ```
 
-Then put the worker's URL in `.env.production` as
-`VITE_PAYMENTS_ENDPOINT=https://…workers.dev` and redeploy the site. The secret
-never goes in this repository — it's public. Razorpay also has to approve
-`adimakesmusic.in` (Account & Settings → Business website details) before
-live payments are accepted, and capture should be set to automatic.
+Secrets are typed into `pay:setup` and go straight to Cloudflare; they never go
+in this repository — it's public. Razorpay also has to list `adimakesmusic.in`
+(Account & Settings → Business website details) for live payments.
+
+Until the keys are stored, the server says online booking is off and the page
+falls back to sending the booking by WhatsApp or email; it switches to Razorpay
+by itself once they are — no rebuild.
 
 ## Swap in new music
 

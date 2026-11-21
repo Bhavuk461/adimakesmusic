@@ -68,6 +68,8 @@ export default defineConfig({
         privacy: at("privacy/index.html"),
         refunds: at("refunds/index.html"),
         shipping: at("shipping/index.html"),
+        // private — noindex, and left out of the sitemap
+        dashboard: at("dashboard/index.html"),
       },
     },
   },

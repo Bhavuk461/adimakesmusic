@@ -10,9 +10,10 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "pay:test": "tsc -p worker && node --test \"worker/test/*.test.ts\"",
+    "pay:setup": "node scripts/pay-setup.mjs",
+    "pay:password": "node scripts/pay-setup.mjs --password-only",
     "pay:login": "npx --yes wrangler@4 login",
     "pay:deploy": "npx --yes wrangler@4 deploy --config worker/wrangler.toml",
-    "pay:secret": "npx --yes wrangler@4 secret put RAZORPAY_KEY_SECRET --config worker/wrangler.toml",
     "pay:logs": "npx --yes wrangler@4 tail --config worker/wrangler.toml"
   },
   "dependencies": {

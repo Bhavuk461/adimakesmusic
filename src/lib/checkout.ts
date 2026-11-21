@@ -42,10 +42,40 @@ declare global {
 }
 
 export type PayResult =
-  | { status: "paid"; paymentId: string }
-  | { status: "unverified"; paymentId: string }
+  | { status: "paid"; paymentId: string; orderId: string }
+  | { status: "unverified"; paymentId: string; orderId: string }
   | { status: "dismissed" }
-  | { status: "failed"; message: string };
+  | {
+      status: "failed";
+      message: string;
+      /** The form field the server objected to, e.g. "date" when it's taken. */
+      field?: string;
+      /** The server says online booking isn't switched on. */
+      off?: boolean;
+    };
+
+/** Whether online booking is on, and which dates are already taken. */
+export type Availability = { configured: boolean; booked: string[] };
+
+export async function availability(endpoint: string): Promise<Availability> {
+  const res = await fetch(`${endpoint}/availability`, { cache: "no-store" });
+  if (!res.ok) throw new Error("availability");
+  const data = (await res.json()) as Partial<Availability>;
+  return {
+    configured: data.configured === true,
+    booked: Array.isArray(data.booked) ? data.booked.filter((d): d is string => typeof d === "string") : [],
+  };
+}
+
+class RequestError extends Error {
+  status: number;
+  field?: string;
+  constructor(message: string, status: number, field?: string) {
+    super(message);
+    this.status = status;
+    this.field = field;
+  }
+}
 
 const SCRIPT = "https://checkout.razorpay.com/v1/checkout.js";
 let loading: Promise<void> | null = null;
@@ -73,8 +103,8 @@ async function post<T>(url: string, body: unknown): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(data.error || "request");
+  const data = (await res.json().catch(() => ({}))) as T & { error?: string; field?: string };
+  if (!res.ok) throw new RequestError(data.error || "request", res.status, data.field);
   return data;
 }
 
@@ -84,10 +114,9 @@ export async function pay(endpoint: string, booking: BookingDetails): Promise<Pa
     order = await post(`${endpoint}/order`, booking);
     await loadCheckout();
   } catch (err) {
-    const message = err instanceof Error && err.message !== "request" && err.message !== "checkout"
-      ? err.message
-      : "we couldn't open the payment page — check your connection and try again";
-    return { status: "failed", message };
+    if (err instanceof RequestError && err.message !== "request")
+      return { status: "failed", message: err.message, field: err.field, off: err.status === 503 };
+    return { status: "failed", message: "we couldn't open the payment page — check your connection and try again" };
   }
 
   return new Promise<PayResult>((resolve) => {
@@ -108,11 +137,10 @@ export async function pay(endpoint: string, booking: BookingDetails): Promise<Pa
       handler: (r) => {
         // the money has moved at this point; the check below only decides
         // whether we can say so with certainty on this screen
+        const ids = { paymentId: r.razorpay_payment_id, orderId: r.razorpay_order_id };
         post<{ ok: boolean }>(`${endpoint}/verify`, r)
-          .then((v) =>
-            resolve(v.ok ? { status: "paid", paymentId: r.razorpay_payment_id } : { status: "unverified", paymentId: r.razorpay_payment_id }),
-          )
-          .catch(() => resolve({ status: "unverified", paymentId: r.razorpay_payment_id }));
+          .then((v) => resolve({ status: v.ok ? "paid" : "unverified", ...ids }))
+          .catch(() => resolve({ status: "unverified", ...ids }));
       },
       modal: {
         // a failed attempt can be retried inside Razorpay's window, so a
