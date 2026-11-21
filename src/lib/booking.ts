@@ -54,16 +54,22 @@ export function todayISO(now = new Date()) {
 const nowHHMM = (now = new Date()) => `${p2(now.getHours())}:${p2(now.getMinutes())}`;
 
 /**
- * Start times the booking page offers: from 10 in the morning to 11 at night,
- * in two rows of seven, at any quarter hour.
+ * Every hour of the day, as the booking page lays them out: four rows of six,
+ * starting in the morning, so the small hours come last. Any minute in steps
+ * of five.
  */
-export const START_HOURS = {
-  day: [10, 11, 12, 13, 14, 15, 16],
-  evening: [17, 18, 19, 20, 21, 22, 23],
-} as const;
-export const START_MINUTES = ["00", "15", "30", "45"] as const;
+export const START_HOURS = [
+  { part: "morning", hours: [6, 7, 8, 9, 10, 11] },
+  { part: "afternoon", hours: [12, 13, 14, 15, 16, 17] },
+  { part: "evening", hours: [18, 19, 20, 21, 22, 23] },
+  { part: "late night", hours: [0, 1, 2, 3, 4, 5] },
+] as const;
+export const START_MINUTES = Array.from({ length: 12 }, (_, i) => p2(i * 5));
 
-/** 20 → { hour: "8", half: "pm" }; noon reads as noon. */
+/** Hours from midnight to 5 am fall on the next calendar day after a night out. */
+export const isSmallHours = (time: string) => /^0[0-5]:/.test(time);
+
+/** 20 → { hour: "8", half: "pm" }; noon reads as noon; 0 is 12 am. */
 export function clockHour(h: number) {
   return { hour: String(h % 12 || 12), half: h === 12 ? "noon" : h < 12 ? "am" : "pm" };
 }

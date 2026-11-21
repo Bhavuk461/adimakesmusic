@@ -589,8 +589,9 @@ export default function BookPage() {
                 </p>
               </div>
 
-              {/* Left: date, occasion, venue, name. Right: the start-time pads,
-                  standing as tall as those four. Tab order runs down the page. */}
+              {/* Left: date, occasion, venue, name, number. Right: the start-time
+                  pads, standing as tall as those five. Then email | notes.
+                  Tab order runs down the page. */}
               <div className="grid gap-x-10 gap-y-9 md:grid-cols-2">
                 <Field id="bk-date" label="date of the event" error={errors.date}>
                   <input
@@ -603,7 +604,7 @@ export default function BookPage() {
                     {...err("date")}
                   />
                 </Field>
-                <div className="md:row-span-4">
+                <div className="md:row-span-5">
                   <StartTime value={details.time} onChange={(t) => update("time", t)} error={errors.time} />
                 </div>
                 <Field id="bk-event" label="the occasion" error={errors.event}>
@@ -676,7 +677,7 @@ export default function BookPage() {
                     {...err("email")}
                   />
                 </Field>
-                <Field id="bk-notes" label="anything we should know" optional className="md:col-span-2">
+                <Field id="bk-notes" label="anything we should know" optional>
                   <textarea
                     id="bk-notes"
                     rows={1}
